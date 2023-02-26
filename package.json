@@ -8,8 +8,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "prompt": "^1.3.0",
+    "prompt-sync": "^4.2.0"
   },
-  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaxCunningham19/proxy_server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MaxCunningham19/proxy_server/issues"
+  },
+  "homepage": "https://github.com/MaxCunningham19/proxy_server#readme",
   "description": ""
 }
