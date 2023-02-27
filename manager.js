@@ -97,6 +97,16 @@ module.exports = class Manager {
         return this.log.toString()
     }
 
+    make_metrics(){
+        let table = ['<table>\n<tr>\n<th>URL</th>\n<th>No. Visits</th>\n<th>Last Visited</th>\n<th>Is Blocked</th>\n</tr>\n']
+        let keys = Object.keys(this.urls)
+        for (let i = 0; i < keys.length; i++) {
+            table.push(`<tr>\n<td>${keys[i]}</td>\n<td>${this.urls[keys[i]].views}</td>\n<td>${this.urls[keys[i]].lastV}</td>\n<td>${this.urls[keys[i]].blocked}</td>\n</tr>`)
+        }
+        table.push('</table>')
+        return table.join('\n')
+    }
+
     make_log(){
         let list = this.log.list()
         let html = ["<ul>"]
@@ -107,7 +117,118 @@ module.exports = class Manager {
         return html.join('\n')
     }
 
-    admin_html(){
+    make_blocklist(){
+        let blocked = this.blocked()
+        let html = ['<table>']
+        for (let i=0;i<blocked.length;i++){
+            html.push(`<tr>\n<td>${blocked[i]}</td>\n</tr>`)
+        }
+        html.push('</table>')
+        return html.join('\n')
+    }
+
+    admin(serverAddress, data){
+        if (serverAddress === 'admin'){
+            return this.admin_home()
+        }
+        switch(serverAddress){
+            case 'adminlogs':
+                return this.admin_logs()
+            case 'adminblocklist':
+                return this.admin_block()
+            case 'adminmetrics':
+                return this.admin_metrics()
+            default:
+                return this.admin_error()
+        }
+    }
+
+    admin_block(){
+        return (`<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ADMIN CONTROL</title>
+        </head>
+        <body>
+            <h1>Edit BlockList</h1><br>
+            <a href="http://adminlogs">View Logs</a><br>
+            <a href="http://adminblocklist">Edit Blocklist</a><br>
+            <a href="http://adminmetrics">View Metrics</a><br>
+            </div>
+            <div>
+                ${this.make_blocklist()}
+            </div>
+        </body>
+        </html>
+        `)
+    }
+
+    admin_metrics(){
+        return (`<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ADMIN CONTROL</title>
+        </head>
+        <body>
+            <h1>Proxy Server Metrics</h1><br>
+            <a href="http://adminlogs">View Logs</a><br>
+            <a href="http://adminblocklist">Edit Blocklist</a><br>
+            <a href="http://adminmetrics">View Metrics</a><br>
+            </div>
+            <div>
+                ${this.make_metrics()}
+            </div>
+        </body>
+        </html>
+        `)
+    }
+
+    admin_logs(){
+        return (`<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ADMIN CONTROL</title>
+        </head>
+        <body>
+            <h1>Proxy Server Logs</h1><br>
+            <a href="http://adminlogs">View Logs</a><br>
+            <a href="http://adminblocklist">Edit Blocklist</a><br>
+            <a href="http://adminmetrics">View Metrics</a><br>
+            </div>
+            <div>
+                ${this.make_log()}
+            </div>
+        </body>
+        </html>
+        `)
+    }
+
+    admin_error(){
+        return (`<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Error</title>
+        </head>
+        <body>
+            <h1>Error Page Does Not Exist</h1>
+        </body>
+        </html>
+        `)
+    }
+
+    admin_home(){
         return (`<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -118,13 +239,17 @@ module.exports = class Manager {
         </head>
         <body>
             <h1>Admin Control</h1>
-            ${this.make_log()}
+            <div>
+            <a href="http://adminlogs">View Logs</a><br>
+            <a href="http://adminblocklist">Edit Blocklist</a><br>
+            <a href="http://adminmetrics">View Metrics</a><br>
+            </div>
         </body>
         </html>
         `)
     }
 
     is_admin(url){
-        return url==="admin"||url==="admin/"
+        return url==="admin"||url==="adminlogs"||url==='adminblocklist'||url==='adminmetrics'
     }
 }

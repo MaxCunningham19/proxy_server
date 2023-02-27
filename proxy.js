@@ -16,10 +16,11 @@ server.on("connection", (toProxySocket) => {
         let isHTTP = data.toString().indexOf("CONNECT") === -1
 
         if (isHTTP) {
+            console.log(data.toString())
             let serverAddress = data.toString().split("Host: ")[1].split("\r\n")[0];
             console.log(serverAddress)
             if (application_manager.is_admin(serverAddress)){
-                let file = application_manager.admin_html()
+                let file = application_manager.admin(serverAddress,data.toString())
                 toProxySocket.write(file, () => {
                     toProxySocket.destroy()
                 })
