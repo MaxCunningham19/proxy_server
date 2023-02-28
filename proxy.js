@@ -16,9 +16,8 @@ server.on("connection", (toProxySocket) => {
         let isHTTP = data.toString().indexOf("CONNECT") === -1
 
         if (isHTTP) {
-            console.log(data.toString())
             let serverAddress = data.toString().split("Host: ")[1].split("\r\n")[0];
-            console.log(serverAddress)
+            //console.log(serverAddress)
             if (application_manager.is_admin(serverAddress)){
                 let file = application_manager.admin(serverAddress,data.toString())
                 toProxySocket.write(file, () => {
@@ -59,7 +58,7 @@ server.on("connection", (toProxySocket) => {
             }
         } else { // is HTTPS
             let serverAddress = data.toString().split("CONNECT")[1].split(" ")[1].split(":")[0];
-            console.log(serverAddress)
+            //console.log(serverAddress)
             if (!application_manager.is_blocked(serverAddress)) {
                 application_manager.visit(serverAddress)
                 let toServerSocket = net.createConnection(

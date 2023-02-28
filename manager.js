@@ -77,8 +77,8 @@ module.exports = class Manager {
         return visitedURLs
     }
 
-    format_date(date_ob){
-        if (date_ob == null){
+    format_date(date_ob) {
+        if (date_ob == null) {
             return "UNKNOWN"
         }
         return `${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()}`
@@ -97,7 +97,7 @@ module.exports = class Manager {
         return this.log.toString()
     }
 
-    make_metrics(){
+    make_metrics() {
         let table = ['<table>\n<tr>\n<th>URL</th>\n<th>No. Visits</th>\n<th>Last Visited</th>\n<th>Is Blocked</th>\n</tr>\n']
         let keys = Object.keys(this.urls)
         for (let i = 0; i < keys.length; i++) {
@@ -107,43 +107,55 @@ module.exports = class Manager {
         return table.join('\n')
     }
 
-    make_log(){
+    make_log() {
         let list = this.log.list()
         let html = ["<ul>"]
-        for(let i=0;i<list.length;i++){
+        for (let i = 0; i < list.length; i++) {
             html.push(`<li>${list[i]}</li>`)
         }
         html.push('</ul>')
         return html.join('\n')
     }
 
-    make_blocklist(){
+    make_blocklist() {
         let blocked = this.blocked()
         let html = ['<table>']
-        for (let i=0;i<blocked.length;i++){
+        for (let i = 0; i < blocked.length; i++) {
             html.push(`<tr>\n<td>${blocked[i]}</td>\n</tr>`)
         }
         html.push('</table>')
         return html.join('\n')
     }
 
-    admin(serverAddress, data){
-        if (serverAddress === 'admin'){
-            return this.admin_home()
+    admin(serverAddress, data) {
+        if (!this.is_admin(serverAddress)) {
+            return this.admin_error()
         }
-        switch(serverAddress){
-            case 'adminlogs':
+        let url = this.get_url(data)
+        let page = url.split('admin/')[1].split('/')
+        switch (page[0]) {
+            case 'logs':
                 return this.admin_logs()
-            case 'adminblocklist':
+            case 'blocklist':
                 return this.admin_block()
-            case 'adminmetrics':
+            case 'metrics':
                 return this.admin_metrics()
+            case 'block':
+                this.block(page[1])
+                return this.admin_block()
+            case 'unblock':
+                this.unblock(page[1])
+                return this.admin_block()
+            case '':
+                return this.admin_home()
+            case 'favicon.ico':
+                return '<></>'
             default:
                 return this.admin_error()
         }
     }
 
-    admin_block(){
+    admin_block() {
         return (`<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -154,19 +166,46 @@ module.exports = class Manager {
         </head>
         <body>
             <h1>Edit BlockList</h1><br>
-            <a href="http://adminlogs">View Logs</a><br>
-            <a href="http://adminblocklist">Edit Blocklist</a><br>
-            <a href="http://adminmetrics">View Metrics</a><br>
+            <a href="http://admin/logs">View Logs</a><br>
+            <a href="http://admin/blocklist">Edit Blocklist</a><br>
+            <a href="http://admin/metrics">View Metrics</a><br>
             </div>
             <div>
                 ${this.make_blocklist()}
             </div>
+            <form>
+                <label for="url">URL:</label><br>
+                <input type="text" id="url" name="url"><br>
+                <button type="button" onClick="block_url()">BLOCK</button><button type="button" onClick="unblock_url()">UNBLOCK</button>
+            </form>
         </body>
+        <script>
+        function block_url() {
+            let url = document.getElementById("url").value;
+            fetch("http://admin/block/"+url, {
+            headers: {
+                'Accept': 'text/html'
+            }
+            })
+            .then(response =>{console.log(response.text())})
+            .then(text => console.log(text))
+        }
+        function unblock_url() {
+            let url = document.getElementById("url").value;
+            fetch("http://admin/unblock/"+url, {
+            headers: {
+                'Accept': 'text/html'
+            }
+            })
+            .then(response =>{console.log(response.text())})
+            .then(text => console.log(text))
+        }
+        </script>
         </html>
         `)
     }
 
-    admin_metrics(){
+    admin_metrics() {
         return (`<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -177,9 +216,9 @@ module.exports = class Manager {
         </head>
         <body>
             <h1>Proxy Server Metrics</h1><br>
-            <a href="http://adminlogs">View Logs</a><br>
-            <a href="http://adminblocklist">Edit Blocklist</a><br>
-            <a href="http://adminmetrics">View Metrics</a><br>
+            <a href="http://admin/logs">View Logs</a><br>
+            <a href="http://admin/blocklist">Edit Blocklist</a><br>
+            <a href="http://admin/metrics">View Metrics</a><br>
             </div>
             <div>
                 ${this.make_metrics()}
@@ -189,7 +228,7 @@ module.exports = class Manager {
         `)
     }
 
-    admin_logs(){
+    admin_logs() {
         return (`<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -200,9 +239,9 @@ module.exports = class Manager {
         </head>
         <body>
             <h1>Proxy Server Logs</h1><br>
-            <a href="http://adminlogs">View Logs</a><br>
-            <a href="http://adminblocklist">Edit Blocklist</a><br>
-            <a href="http://adminmetrics">View Metrics</a><br>
+            <a href="http://admin/logs">View Logs</a><br>
+            <a href="http://admin/blocklist">Edit Blocklist</a><br>
+            <a href="http://admin/metrics">View Metrics</a><br>
             </div>
             <div>
                 ${this.make_log()}
@@ -212,7 +251,7 @@ module.exports = class Manager {
         `)
     }
 
-    admin_error(){
+    admin_error() {
         return (`<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -228,7 +267,7 @@ module.exports = class Manager {
         `)
     }
 
-    admin_home(){
+    admin_home() {
         return (`<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -240,16 +279,20 @@ module.exports = class Manager {
         <body>
             <h1>Admin Control</h1>
             <div>
-            <a href="http://adminlogs">View Logs</a><br>
-            <a href="http://adminblocklist">Edit Blocklist</a><br>
-            <a href="http://adminmetrics">View Metrics</a><br>
+            <a href="http://admin/logs">View Logs</a><br>
+            <a href="http://admin/blocklist">Edit Blocklist</a><br>
+            <a href="http://admin/metrics">View Metrics</a><br>
             </div>
         </body>
         </html>
         `)
     }
 
-    is_admin(url){
-        return url==="admin"||url==="adminlogs"||url==='adminblocklist'||url==='adminmetrics'
+    is_admin(host) {
+        return host === "admin"
+    }
+
+    get_url(data) {
+        return data.split('GET')[1].split('HTTP')[0].trim()
     }
 }
