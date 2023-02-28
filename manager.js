@@ -18,15 +18,33 @@ public methods {
 This class manages all of the functionality of the management console
 */
 module.exports = class Manager {
+    /*
+    urls:json
+    log: class Log
+
+    urls: This stores all information about how many urls have been visied,
+    how many times a url has been visited, and if the url is blocked
+    url example :
+        url:{
+            "www.example.com":{
+                visits: 7,
+                blocked: false
+            }
+        }
+    */
     constructor() {
         this.urls = {}
         this.log = new Log()
     }
 
+    // exists(url:string):bool
+    // this returns true if a url is present in the json object
     exists(url) {
         return this.urls[url] != null
     }
 
+    // is_blocked(url:string):bool
+    // this returns true if a url is blocked
     is_blocked(url) {
         url = url.replace('www.','')
         if (this.exists(url)) {
@@ -40,6 +58,8 @@ module.exports = class Manager {
         return false
     }
 
+    // block(url:string):None
+    // this blocks and logs that a url has been blocked
     async block(url) {
         this.log.block(url)
         if (!this.exists(url)) {
@@ -49,6 +69,8 @@ module.exports = class Manager {
         this.urls[url].blocked = true
     }
 
+    // unblock(url:string):None
+    // this unblocks and logs that a url has been unblocked
     async unblock(url) {
         this.log.unblock(url)
         if (!this.exists(url)) {
@@ -58,14 +80,20 @@ module.exports = class Manager {
         this.urls[url].blocked = false
     }
 
+    // cache(url:string):None
+    // This logs that a url has been cached
     async cache(url){
         this.log.cache(url)
     }
 
+    // retrive(url:string):None
+    // This logs that a url has been retrived from cache
     retrive(url){
         this.log.retrive(url)
     }
 
+    // blocked():[string]
+    // This returns a list of the urls that are currently blocked
     blocked() {
         let list = Object.keys(this.urls)
         let blockedURLs = []
@@ -77,10 +105,15 @@ module.exports = class Manager {
         return blockedURLs
     }
 
+    // have_visted(url:string):bool
+    // This returns true if we have visited a url at least once
     have_visited(url) {
         return this.exists(url) && (this.urls[url].views > 0)
     }
 
+    // visit(urlstring):None
+    // This increases the number of recorded views for the website
+    // and logs that the website was visited
     async visit(url) {
         this.log.visit(url)
         if (!this.have_visited(url)) {
@@ -92,6 +125,8 @@ module.exports = class Manager {
         this.urls[url].lastV = new Date()
     }
 
+    // visited():[string]
+    // this returns an array of the urls that have been visited at least once
     visited() {
         let list = Object.keys(this.urls)
         let visitedURLs = []
@@ -103,6 +138,8 @@ module.exports = class Manager {
         return visitedURLs
     }
 
+    // format_date(date_ob:Date.Date):string
+    // this returns a formated string of a date YY/MM/DD-HH:MM:SS
     format_date(date_ob) {
         if (date_ob == null) {
             return "UNKNOWN"
@@ -110,6 +147,9 @@ module.exports = class Manager {
         return `${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()}`
     }
 
+    // info():string
+    // this returns the information stored in this.urls as a string
+    // with each url seperated by a '\n'
     info() {
         let information = []
         let keys = Object.keys(this.urls)
@@ -119,10 +159,15 @@ module.exports = class Manager {
         return information.join('\n')
     }
 
+    // logs():[string]
+    // this returns the information stored in this.log
     logs() {
         return this.log.toString()
     }
 
+    // make_metrics():string
+    // this returns a html element formatting all the
+    // information stored in this.urls
     make_metrics() {
         let table = ['<table>\n<tr>\n<th>URL</th>\n<th>No. Visits</th>\n<th>Last Visited</th>\n<th>Is Blocked</th>\n</tr>\n']
         let keys = Object.keys(this.urls)
@@ -133,6 +178,9 @@ module.exports = class Manager {
         return table.join('\n')
     }
 
+    // make_log():string
+    // this returns a html element formatting
+    // the logs into a list
     make_log() {
         let list = this.log.list()
         let html = ["<ul>"]
@@ -143,6 +191,9 @@ module.exports = class Manager {
         return html.join('\n')
     }
 
+    // make_blocklist:string
+    // this returns a html element formatting
+    // the blocked urls into a list
     make_blocklist() {
         let blocked = this.blocked()
         let html = ['<table>']
@@ -153,6 +204,10 @@ module.exports = class Manager {
         return html.join('\n')
     }
 
+    // admin(serverAddress:string, data:string):string
+    // this takes in the host address as well as the http request
+    // then it returns a webpage as a string to be returned based on
+    // the url
     admin(serverAddress, data) {
         if (!this.is_admin(serverAddress)) {
             return this.admin_error()
@@ -181,6 +236,9 @@ module.exports = class Manager {
         }
     }
 
+    // admin_block():string
+    // this returns a webpage of the blocked urls and a form to
+    // block & unblock urls
     admin_block() {
         return (`<!DOCTYPE html>
         <html lang="en">
@@ -231,6 +289,9 @@ module.exports = class Manager {
         `)
     }
 
+    // admin_metrics():string
+    // this returns a webpage of all information
+    // stored in this.urls
     admin_metrics() {
         return (`<!DOCTYPE html>
         <html lang="en">
@@ -254,6 +315,9 @@ module.exports = class Manager {
         `)
     }
 
+    // admin_logs():string
+    // this returns a webpage of all the logs stored
+    // in this.log
     admin_logs() {
         return (`<!DOCTYPE html>
         <html lang="en">
@@ -277,6 +341,8 @@ module.exports = class Manager {
         `)
     }
 
+    // admin_error():string
+    // thsi returns an error webpage
     admin_error() {
         return (`<!DOCTYPE html>
         <html lang="en">
@@ -293,6 +359,8 @@ module.exports = class Manager {
         `)
     }
 
+    // admin_home():string
+    // this returns the homepage of the admin console
     admin_home() {
         return (`<!DOCTYPE html>
         <html lang="en">
@@ -314,10 +382,15 @@ module.exports = class Manager {
         `)
     }
 
+    // is_admin(host:string):bool
+    // this checks to see if the host is 'admin'
+    // this will access the management console
     is_admin(host) {
         return host === "admin"
     }
 
+    // get_url(data:string):string
+    // this returns the url from a http request
     get_url(data) {
         return data.split('GET')[1].split('HTTP')[0].trim()
     }
