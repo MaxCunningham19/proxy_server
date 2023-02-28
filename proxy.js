@@ -11,27 +11,33 @@ const webcache = new cache()
 
 const application_manager = new Manager()
 
+function get_url_https(data){
+    return data.split('CONNECT')[1].split('HTTP')[0].replace(':443','').trim()
+}
+
 server.on("connection", (toProxySocket) => {
     toProxySocket.once("data", (data) => {
         let isHTTP = data.toString().indexOf("CONNECT") === -1
 
         if (isHTTP) {
             let serverAddress = data.toString().split("Host: ")[1].split("\r\n")[0];
-            //console.log(serverAddress)
+            let url = application_manager.get_url(data.toString())
             if (application_manager.is_admin(serverAddress)){
                 let file = application_manager.admin(serverAddress,data.toString())
                 toProxySocket.write(file, () => {
                     toProxySocket.destroy()
                 })
             }
-            else if (!application_manager.is_blocked(serverAddress)) {
-                application_manager.visit(serverAddress)
-                if (webcache.is_valid(serverAddress)) {
-                    let file = webcache.get(serverAddress)
+            else if (!(application_manager.is_blocked(url) || application_manager.is_blocked(serverAddress))) {
+                if (webcache.is_valid(url)) {
+                    let file = webcache.get(url)
                     toProxySocket.write(file, () => {
                         toProxySocket.destroy()
                     })
+                    application_manager.retrive(url)
                 } else {
+                    application_manager.visit(url)
+
                     var vars = {
                         host: serverAddress,
                         port: 80,
@@ -46,8 +52,9 @@ server.on("connection", (toProxySocket) => {
                             })
                         })
                         result.on("close", () => {
-                            webcache.cache(incomingdata.join(''), serverAddress)
+                            webcache.cache(incomingdata.join(''), url)
                             toProxySocket.destroy()
+                            application_manager.cache(url)
                         })
                     }).on('error', function (err) {
                         //console.log(err)
@@ -58,8 +65,8 @@ server.on("connection", (toProxySocket) => {
             }
         } else { // is HTTPS
             let serverAddress = data.toString().split("CONNECT")[1].split(" ")[1].split(":")[0];
-            //console.log(serverAddress)
-            if (!application_manager.is_blocked(serverAddress)) {
+            let url = get_url_https(data.toString())
+            if (!(application_manager.is_blocked(url) || application_manager.is_blocked(serverAddress))) {
                 application_manager.visit(serverAddress)
                 let toServerSocket = net.createConnection(
                     {

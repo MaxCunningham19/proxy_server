@@ -1,10 +1,22 @@
 const Log = require('./logger')
 
-const BLOCKED = "blocked"
-const VIEWS = "views"
-const LASTVIEW = "update"
+/*
+Manager:class
 
+public methods {
+    exists(url:string):bool
+    is_blocked(url:string):bool 
+    cache(url:string):None
+    retrive(url:string):None
+    have_visited(url:string):bool 
+    visit(url:string): None
+    admin(serverAddress:string, data:string):string
+    is_admin(host:string):bool
+    get_url(data:string):string
+}
 
+This class manages all of the functionality of the management console
+*/
 module.exports = class Manager {
     constructor() {
         this.urls = {}
@@ -16,13 +28,19 @@ module.exports = class Manager {
     }
 
     is_blocked(url) {
+        url = url.replace('www.','')
         if (this.exists(url)) {
             return this.urls[url].blocked
         }
+        url = 'www.'+url
+        if (this.exists(url)) {
+            return this.urls[url].blocked
+        }
+
         return false
     }
 
-    block(url) {
+    async block(url) {
         this.log.block(url)
         if (!this.exists(url)) {
             this.urls[url] = {}
@@ -31,13 +49,21 @@ module.exports = class Manager {
         this.urls[url].blocked = true
     }
 
-    unblock(url) {
+    async unblock(url) {
         this.log.unblock(url)
         if (!this.exists(url)) {
             this.url[url] = {}
             this.urls[url].views = 0
         }
         this.urls[url].blocked = false
+    }
+
+    async cache(url){
+        this.log.cache(url)
+    }
+
+    retrive(url){
+        this.log.retrive(url)
     }
 
     blocked() {
@@ -101,7 +127,7 @@ module.exports = class Manager {
         let table = ['<table>\n<tr>\n<th>URL</th>\n<th>No. Visits</th>\n<th>Last Visited</th>\n<th>Is Blocked</th>\n</tr>\n']
         let keys = Object.keys(this.urls)
         for (let i = 0; i < keys.length; i++) {
-            table.push(`<tr>\n<td>${keys[i]}</td>\n<td>${this.urls[keys[i]].views}</td>\n<td>${this.urls[keys[i]].lastV}</td>\n<td>${this.urls[keys[i]].blocked}</td>\n</tr>`)
+            table.push(`<tr>\n<td>${keys[i]}</td>\n<td>${this.urls[keys[i]].views}</td>\n<td>${this.urls[keys[i]].lastV}</td>\n<td> ${this.urls[keys[i]].blocked ? "TRUE" : "FALSE"}</td>\n</tr>`)
         }
         table.push('</table>')
         return table.join('\n')
