@@ -14,5 +14,3 @@ This is an application made for a TCD 3rd year Advanced Computer Networks module
  In order to access the management console go to http://admin/ on the browser of your choice.
 
  here you will be able to browse the Logs, Block and Unblock urls and see the server metrics.
-
-
