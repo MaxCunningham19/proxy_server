@@ -7,7 +7,7 @@ public methods {
     exists(url:string):bool
     is_blocked(url:string):bool 
     cache(url:string):None
-    retrive(url:string):None
+    retrieve(url:string):None
     have_visited(url:string):bool 
     visit(url:string): None
     admin(serverAddress:string, data:string):string
@@ -86,10 +86,10 @@ module.exports = class Manager {
         this.log.cache(url)
     }
 
-    // retrive(url:string):None
-    // This logs that a url has been retrived from cache
-    retrive(url){
-        this.log.retrive(url)
+    // retrieve(url:string):None
+    // This logs that a url has been retrieved from cache
+    retrieve(url){
+        this.log.retrieve(url)
     }
 
     // blocked():[string]
@@ -184,7 +184,7 @@ module.exports = class Manager {
     make_log() {
         let list = this.log.list()
         let html = ["<ul>"]
-        for (let i = 0; i < list.length; i++) {
+        for (let i = list.length-1; i >=0; i--) {
             html.push(`<li>${list[i]}</li>`)
         }
         html.push('</ul>')
@@ -301,6 +301,9 @@ module.exports = class Manager {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ADMIN CONTROL</title>
         </head>
+        <style>
+        td {width:40px;}
+        </style>
         <body>
             <h1>Proxy Server Metrics</h1><br>
             <a href="http://admin/logs">View Logs</a><br>

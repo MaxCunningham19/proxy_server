@@ -1,11 +1,4 @@
-const { send } = require('process')
 const fs = require('fs')
-const path = require('path')
-const http = require('http')
-const https = require('https')
-const { isAbsolute } = require('path')
-
-const app = require('express')()
 const MS_PER_MINUTE = 60000
 const REFRESH_RATE_MINUTES = 5
 
@@ -47,10 +40,10 @@ module.exports = class Cacher {
     // This function takes a hostname (url being accessed) and
     // returns a formated path to where this webpage should be stored.
     make_filename(hostname) {
-        hostname = hostname.replace('http://','')
-        hostname = hostname.replace('www.','')
-        hostname = hostname.replace('/','_')
-        return `${__dirname}/cache/${hostname}`
+        hostname = hostname.split('http://').join('')
+        hostname = hostname.split('www.').join('')
+        hostname = hostname.split('/').join('_')
+        return `${__dirname}/cache/${hostname}` 
     }
 
     // cache(webpage:string, hostname: string): None
@@ -80,14 +73,10 @@ module.exports = class Cacher {
     // is_valid(hostname:string):bool
     // This returns true if the url exists in the web_cache.
     is_valid(hostname) {
-        if (this.web_cache[hostname] === undefined) {
-            return false
+        if (this.exists(hostname) && (this.web_cache[hostname].updated >= Date.now() - (MS_PER_MINUTE * REFRESH_RATE_MINUTES))) {
+            return true
         }
-        if (this.web_cache[hostname].updated < Date.now() - (MS_PER_MINUTE * REFRESH_RATE_MINUTES)) {
-            console.log(hostname,"is too old")
-            return false
-        }
-        return true
+        return false
     }
 
     // get(hostname: string):string
@@ -104,6 +93,12 @@ module.exports = class Cacher {
         }
         var file = fs.readFileSync(`${__dirname}/static/error.html`, { encoding: 'utf8', flag: 'r' });
         return file
+    }
+
+    // exists(hostname: string):bool
+    // returns true if a hostname/url exists in the cache
+    exists(hostname){
+        return Object.keys(this.web_cache).includes(hostname)
     }
 
 }

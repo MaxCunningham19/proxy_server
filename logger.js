@@ -15,39 +15,43 @@ module.exports = class Log {
         this.log = []
     }
 
+    format_date(date_ob){
+        return `@${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()}`
+    }
+    
     // block(url:string):None
     // Stores when a url is blocked
     async block(url) {
         let date_ob = new Date();
-        this.log.push(`@${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()} BLOCKED: ${url}`)
+        this.log.push(`${this.format_date(date_ob)} BLOCKED: ${url}`)
     }
 
     // unblock(url:string):None
     // Stores whenever a url is blocked
     async unblock(url) {
         let date_ob = new Date();
-        this.log.push(`@${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()} UNBLOCKED: ${url}`)
+        this.log.push(`${this.format_date(date_ob)} UNBLOCKED: ${url}`)
     }
 
     // visit(url:string):None
     // Stores when ever a url is visited
     async visit(url) {
         let date_ob = new Date();
-        this.log.push(`@${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()} VISITED: ${url}`)
+        this.log.push(`${this.format_date(date_ob)} VISITED: ${url}`)
     }
 
-    // retrive(url:string):None
+    // retrieve(url:string):None
     // stores when a webpage is retirved from cache
-    async retrive(url){
+    async retrieve(url){
         let date_ob = new Date();
-        this.log.push(`@${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()} RETRIVED: ${url}`)
+        this.log.push(`${this.format_date(date_ob)} RETRIEVED: ${url}`)
     }
 
     // cache(url:string):None
     // stores when a url is added to the cache
     async cache(url){
         let date_ob = new Date();
-        this.log.push(`@${date_ob.getFullYear() + "/" + ("0" + (date_ob.getMonth() + 1)).slice(-2) + "/" + ("0" + date_ob.getDate()).slice(-2) + "-" + date_ob.getHours() + ":" + date_ob.getMinutes() + ":" + date_ob.getSeconds()} CACHED: ${url}`)
+        this.log.push(`${this.format_date(date_ob)} CACHED: ${url}`)
     }
 
     // toString():string
